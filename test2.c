@@ -53,11 +53,12 @@ int main(){
 
 	lwt_init();
 	printf("init ready_queue size: %d\n",size());
+	sleep(5);
 
 	thread1=lwt_create(Thread1);
 
 	lwt_wait(thread1);
-
+	sleep(5);	
 	printf("Thread1 ready_queue size: %d\n",size());
 
 	thread2=lwt_create(Thread2);
@@ -66,7 +67,10 @@ int main(){
 	thread3=lwt_create(Thread3);
 	printf("Thread3 ready_queue size: %d\n",size());
 
+	//sleep(5);
 	Thread_main();
+
 	printf("complete\n");
+
 	return 0;
 }

@@ -7,11 +7,17 @@
 #include "Queue.h"
 
 #define lwt_quantum 500000
+#define lwt_factor 2
+#define true 1
+#define false 0
+
 //#define _DEBUG_
+
+int wakeup_flag;
 lwt_func temp_func;
-lwt_struct *temp_thread;
+lwt_struct *temp_thread,*next_thread;
 sigset_t blockset;
-Queue* ready_queue; // ready_queue is a CircleQueue
+Queue* ready_queue,*sleep_queue; // ready_queue is a CircleQueue
 
 //lwt_struct thread_list[17];
 
@@ -63,9 +69,17 @@ int size() {
 	return ready_queue->size;
 }
 
+void ticktock(lwt_struct* pthread){
+	pthread->t_slpc--;
+	if(pthread->t_slpc<=0)
+		wakeup_flag=true;
+}
+
 void lwt_init() {
 	
 	ready_queue = InitQueue();
+	sleep_queue = InitQueue();
+
 	temp_thread = (lwt_struct *)malloc(sizeof(lwt_struct));
 	temp_thread->t_state=lwt_READY;
 	temp_thread->t_father=NULL;
@@ -119,14 +133,14 @@ void lwt_wait(lwt_struct* wait_thread) {
 	printf("lwt_wait\n");
 	sigprocmask(SIG_BLOCK, &blockset, NULL);
 
-/*	if(wait_thread->t_state=lwt_EXIT) {
+	if(wait_thread->t_state==lwt_EXIT) {
 		printf("thread already exit\n");
 		free(wait_thread);
 		sigprocmask(SIG_UNBLOCK, &blockset, NULL);
 		return;
 	}
-*/
-//	else{
+
+	else{
 		DeCircleQueue(ready_queue,&temp_thread);
 		temp_thread->t_state=lwt_WAIT;
 		lwt_store(temp_thread);
@@ -144,7 +158,7 @@ void lwt_wait(lwt_struct* wait_thread) {
 			lwt_load(temp_thread);
 			longjmp(temp_thread->t_env,1);		
 		}
-//	}
+	}
 }
 void lwt_exit(){
 	sigprocmask(SIG_BLOCK, &blockset, NULL);
@@ -153,7 +167,7 @@ void lwt_exit(){
 	//free((temp_thread->t_bp)-16384);
 	
 
-	if(temp_thread->t_father->t_state=lwt_WAIT){
+	if(temp_thread->t_father->t_state==lwt_WAIT){
 		printf("wake up fathter\n");
 		EnCircleQueue(ready_queue,temp_thread->t_father);
 	}
@@ -162,11 +176,19 @@ void lwt_exit(){
 	longjmp(temp_thread->t_env,1);		
 	
 }
+void lwt_sleep(int sec) {
+	GetFront(ready_queue,&temp_thread);
+	temp_thread->t_state=lwt_SLEEP;
+	temp_thread->t_slpc=sec*lwt_factor;
+	pause();
+}
+
 void lwt_scheduler (int dummy) {
 #ifdef _DEBUG_	
 printf("scheduler \n");
 #endif
 	if(ready_queue->size>1) {
+		next_thread=NULL;
 		GetFront(ready_queue,&temp_thread);
 #ifdef _DEBUG_
 printf(" Save current thread \n");	
@@ -179,15 +201,38 @@ if(temp_thread==NULL)
 			return;
 		}
 		else {
+			if(temp_thread->t_state==lwt_SLEEP){
+				EnCircleQueue(sleep_queue,temp_thread);
+				DeCircleQueue(ready_queue,&next_thread);
+			}
+			if(sleep_queue->size>0){
+				QueueTraverse(sleep_queue,ticktock);
+			}
+			if(wakeup_flag==true){
+				int i;
+				wakeup_flag=false;
+				for(i=0;i<sleep_queue->size;i++){
+					MoveCircleQueue(sleep_queue,&temp_thread);
+					if(temp_thread->t_slpc<=0)
+						break;
+				}
+				temp_thread->t_state=lwt_READY;
+				next_thread=temp_thread;
+				EnCircleQueue(ready_queue,next_thread);
+				DeCircleQueue(sleep_queue,&temp_thread);
+			}
+			if(next_thread==NULL){
+				MoveCircleQueue(ready_queue,&next_thread);
+			}
 #ifdef _DEBUG_
 printf(" Load next thread \n");
 #endif 
-			MoveCircleQueue(ready_queue,&temp_thread);
-			lwt_load(temp_thread);
+			
+			lwt_load(next_thread);
 #ifdef _DEBUG_
 printf(" jmp to next thread \n");
 #endif
-			longjmp(temp_thread->t_env,1);				
+			longjmp(next_thread->t_env,1);				
 		}
 	}
 

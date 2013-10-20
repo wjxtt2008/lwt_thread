@@ -14,6 +14,8 @@ typedef void (*lwt_func)();
 
 typedef struct lwt_struct {
 	int t_id;
+	int t_slpc;//sleep cycle
+
 	void* t_sp;
 	void* t_bp;
 	struct lwt_struct* t_father;
@@ -34,7 +36,7 @@ void lwt_wait(lwt_struct* wait_thread);
 
 void lwt_exit();
 
-void lwt_sleep(int secs);
+void lwt_sleep(int sec);
 
 //void lwt_wait();
 
