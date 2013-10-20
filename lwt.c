@@ -67,6 +67,9 @@ void lwt_init() {
 	
 	ready_queue = InitQueue();
 	temp_thread = (lwt_struct *)malloc(sizeof(lwt_struct));
+	temp_thread->t_state=lwt_READY;
+	temp_thread->t_father=NULL;
+
 	EnCircleQueue(ready_queue,temp_thread);
 	signal(SIGALRM, lwt_scheduler);
   	ualarm(lwt_quantum,lwt_quantum);
@@ -76,8 +79,9 @@ void lwt_init() {
 
 }
 
-void lwt_create(lwt_func pfunc) {
+lwt_struct* lwt_create(lwt_func pfunc) {
 	void* addr;
+	lwt_struct* new_thread;
 
 	sigprocmask(SIG_BLOCK, &blockset, NULL);
 
@@ -86,25 +90,77 @@ void lwt_create(lwt_func pfunc) {
 	GetFront(ready_queue,&temp_thread);
 	lwt_store(temp_thread);
 
+	new_thread=(lwt_struct *)malloc(sizeof(lwt_struct));	
+
 	if(setjmp(temp_thread->t_env) != 0) {
 		sigprocmask(SIG_UNBLOCK, &blockset, NULL);
-		return;
+		return new_thread;
 	}
 	else{
-		temp_thread = (lwt_struct *)malloc(sizeof(lwt_struct));
-		EnCircleQueue(ready_queue,temp_thread);
+		//temp_thread = (lwt_struct *)malloc(sizeof(lwt_struct));
+		new_thread->t_father=temp_thread;
+		new_thread->t_state=lwt_READY;
+
+		EnCircleQueue(ready_queue,new_thread);
 
 		addr = malloc(16384)+16384;
-		temp_thread->t_sp=temp_thread->t_bp=addr;
+		new_thread->t_sp=new_thread->t_bp=addr;
 //		EnCircleQueue(ready_queue,temp_thread); //why put it here make it a bug? fuck you gcc!
 #ifdef _DEBUG_		
-if(temp_thread==NULL)
+if(new_thread==NULL)
 	printf("create read out temp thread is NULL\n");
 #endif
-		lwt_load(temp_thread);	
+		lwt_load(new_thread);	
 		sigprocmask(SIG_UNBLOCK, &blockset, NULL);
 		temp_func();		
 	}	
+}
+void lwt_wait(lwt_struct* wait_thread) {
+	printf("lwt_wait\n");
+	sigprocmask(SIG_BLOCK, &blockset, NULL);
+
+/*	if(wait_thread->t_state=lwt_EXIT) {
+		printf("thread already exit\n");
+		free(wait_thread);
+		sigprocmask(SIG_UNBLOCK, &blockset, NULL);
+		return;
+	}
+*/
+//	else{
+		DeCircleQueue(ready_queue,&temp_thread);
+		temp_thread->t_state=lwt_WAIT;
+		lwt_store(temp_thread);
+
+		if(setjmp(temp_thread->t_env) != 0) {
+			//void* addr=(wait_thread->t_bp)-16384;
+			//free(addr);
+			sigprocmask(SIG_BLOCK, &blockset, NULL);
+			return;
+		}
+		else {
+			
+			GetFront(ready_queue,&temp_thread);
+			printf("jump to next\n");
+			lwt_load(temp_thread);
+			longjmp(temp_thread->t_env,1);		
+		}
+//	}
+}
+void lwt_exit(){
+	sigprocmask(SIG_BLOCK, &blockset, NULL);
+	DeCircleQueue(ready_queue,&temp_thread);
+	temp_thread->t_state=lwt_EXIT;
+	//free((temp_thread->t_bp)-16384);
+	
+
+	if(temp_thread->t_father->t_state=lwt_WAIT){
+		printf("wake up fathter\n");
+		EnCircleQueue(ready_queue,temp_thread->t_father);
+	}
+	GetFront(ready_queue,&temp_thread);
+	lwt_load(temp_thread);
+	longjmp(temp_thread->t_env,1);		
+	
 }
 void lwt_scheduler (int dummy) {
 #ifdef _DEBUG_	

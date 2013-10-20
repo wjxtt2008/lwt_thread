@@ -3,7 +3,7 @@
 #include <setjmp.h>
 typedef enum lwt_state{
 	lwt_READY,
-	thrd_WAIT,
+	lwt_WAIT,
 	sem_WAIT,
 	lwt_SLEEP,
 	lwt_EXIT
@@ -16,6 +16,7 @@ typedef struct lwt_struct {
 	int t_id;
 	void* t_sp;
 	void* t_bp;
+	struct lwt_struct* t_father;
 	jmp_buf t_env;
 	lwt_func t_func;
 	lwt_state t_state;
@@ -27,9 +28,9 @@ void lwt_scheduler (int dummy);
 
 void lwt_init();
 
-void lwt_create(lwt_func pfunc);
+lwt_struct* lwt_create(lwt_func pfunc);
 
-void lwt_wait();
+void lwt_wait(lwt_struct* wait_thread);
 
 void lwt_exit();
 
