@@ -1,6 +1,7 @@
 #ifndef LWT_H
 #define LWT_H
 #include <setjmp.h>
+//#include "Queue.h"
 typedef enum lwt_state{
 	lwt_READY,
 	lwt_WAIT,
@@ -24,6 +25,12 @@ typedef struct lwt_struct {
 	lwt_state t_state;
 }lwt_struct;
 
+typedef struct lwt_semaphore{
+	int sem_value;
+	void* sem_queue;
+	//Queue sem_queue;
+}lwt_semaphore;
+
 int size();
 
 void lwt_scheduler (int dummy);
@@ -37,6 +44,13 @@ void lwt_wait(lwt_struct* wait_thread);
 void lwt_exit();
 
 void lwt_sleep(int sec);
+
+void lwt_sem_init(lwt_semaphore* sem,int value);
+
+void lwt_semV(lwt_semaphore* sem);
+
+void lwt_semP(lwt_semaphore* sem);
+
 
 //void lwt_wait();
 

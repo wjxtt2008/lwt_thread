@@ -29,18 +29,17 @@ Queue* ready_queue,*sleep_queue; // ready_queue is a CircleQueue
 				"movq %%rsp, %0\n\t" \
 				"movq %%rbp, %1" \
 				:"=a"(pthread->t_sp),"=b"(pthread->t_bp) \
-				: \
-				: ); \
+				); \
 		} while(0)
 
-	#define lwt_load() \
+	#define lwt_load(pthread) \
 		do { \
 			asm volatile ( \
 				"movq %0, %%rsp\n\t" \
 				"movq %1, %%rbp" \
 				: \
 				:"a"(pthread->t_sp),"b"(pthread->t_bp) \
-				:);\
+				);\
 		} while(0)
 #else
 	#define lwt_store(pthread) \
@@ -49,8 +48,7 @@ Queue* ready_queue,*sleep_queue; // ready_queue is a CircleQueue
 				"movl %%esp, %0\n\t" \
 				"movl %%ebp, %1" \
 				:"=a"(pthread->t_sp),"=b"(pthread->t_bp) \
-				: \
-				: ); \
+				); \
 		} while(0)
 
 	#define lwt_load(pthread) \
@@ -60,7 +58,7 @@ Queue* ready_queue,*sleep_queue; // ready_queue is a CircleQueue
 				"movl %1, %%ebp" \
 				: \
 				:"a"(pthread->t_sp),"b"(pthread->t_bp) \
-				:);\
+				);\
 		} while(0)
 
 #endif
@@ -237,5 +235,46 @@ printf(" jmp to next thread \n");
 	}
 
 }
-
-
+void lwt_sem_init(lwt_semaphore* sem,int value){
+	sem->sem_queue = InitQueue();
+	sem->sem_value = value;
+}
+// sem_UP
+void lwt_semV(lwt_semaphore* sem){
+	sigprocmask(SIG_BLOCK, &blockset, NULL);
+	sem->sem_value++;
+	if(sem->sem_value<=0){
+		lwt_store(temp_thread);
+		if(setjmp(temp_thread->t_env) != 0) {
+			sigprocmask(SIG_UNBLOCK, &blockset, NULL);
+			return;
+		}
+		else{
+			DeQueue(sem->sem_queue,&temp_thread);
+			EnCircleQueue(ready_queue,temp_thread);
+			lwt_load(temp_thread);
+			longjmp(temp_thread->t_env,1);			
+		}
+	}
+	sigprocmask(SIG_UNBLOCK, &blockset, NULL);
+}
+//sem_down
+void lwt_semP(lwt_semaphore* sem){
+	sigprocmask(SIG_BLOCK, &blockset, NULL);
+	sem->sem_value--;
+	if(sem->sem_value<0){
+		DeCircleQueue(ready_queue,&temp_thread);
+		lwt_store(temp_thread);
+		if(setjmp(temp_thread->t_env) != 0) {
+			sigprocmask(SIG_UNBLOCK, &blockset, NULL);
+			return;
+		}
+		else{
+			EnQueue(sem->sem_queue,temp_thread);
+			GetFront(ready_queue,&temp_thread);
+			lwt_load(temp_thread);
+			longjmp(temp_thread->t_env,1);
+		}
+	}
+	sigprocmask(SIG_UNBLOCK, &blockset, NULL);
+}

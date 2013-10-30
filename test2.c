@@ -6,7 +6,7 @@
 #include "lwt.h"
 void Thread1() {
 	int i,j,k;
-	for (i = 0; i < 5; i++) {
+	for (i = 0; i < 10; i++) {
     		for (j = 0; j < 500; j++){
 			for(k = 0; k < 250000; k++);		
 		}
@@ -53,12 +53,12 @@ int main(){
 
 	lwt_init();
 	printf("init ready_queue size: %d\n",size());
-	sleep(5);
+	//lwt_sleep(5);
 
 	thread1=lwt_create(Thread1);
 
-	lwt_wait(thread1);
-	sleep(5);	
+	//lwt_wait(thread1);
+	lwt_sleep(5);	
 	printf("Thread1 ready_queue size: %d\n",size());
 
 	thread2=lwt_create(Thread2);
