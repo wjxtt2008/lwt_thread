@@ -20,6 +20,7 @@ typedef struct lwt_struct {
 	void* t_sp;
 	void* t_bp;
 	struct lwt_struct* t_father;
+	struct lwt_struct* t_wthread;
 	jmp_buf t_env;
 	lwt_func t_func;
 	lwt_state t_state;

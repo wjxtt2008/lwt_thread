@@ -141,6 +141,8 @@ void lwt_wait(lwt_struct* wait_thread) {
 	else{
 		DeCircleQueue(ready_queue,&temp_thread);
 		temp_thread->t_state=lwt_WAIT;
+		temp_thread->t_wthread=wait_thread;
+
 		lwt_store(temp_thread);
 
 		if(setjmp(temp_thread->t_env) != 0) {
@@ -165,7 +167,7 @@ void lwt_exit(){
 	//free((temp_thread->t_bp)-16384);
 	
 
-	if(temp_thread->t_father->t_state==lwt_WAIT){
+	if(temp_thread->t_father->t_state==lwt_WAIT&&temp_thread->t_father->t_wthread==temp_thread){
 		printf("wake up fathter\n");
 		EnCircleQueue(ready_queue,temp_thread->t_father);
 	}
