@@ -201,7 +201,8 @@ if(temp_thread==NULL)
 		else {
 			if(temp_thread->t_state==lwt_SLEEP){
 				EnCircleQueue(sleep_queue,temp_thread);
-				DeCircleQueue(ready_queue,&next_thread);
+				DeCircleQueue(ready_queue,&temp_thread);
+				GetFront(ready_queue,&next_thread);
 			}
 			if(sleep_queue->size>0){
 				QueueTraverse(sleep_queue,ticktock);

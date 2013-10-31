@@ -163,11 +163,17 @@ PNode DeCircleQueue(Queue *pqueue,Item *pitem)
 		pqueue->size--;
 		pqueue->front = pnode->next;
 		pqueue->rear->next =pqueue->front;
-		free(pnode);
+/*
+* bug: when delete node in sleep_queue, free pnode
+* will cause a error
+*"glibc detected free(): invalid next size(fast)"			
+*/
+		//free(pnode);
 		if(pqueue->size==0){
 			pqueue->front = NULL;	
 			pqueue->rear = NULL;
 		}
+		//free(pnode);
 	}
 	return pqueue->front;
 }
