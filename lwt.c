@@ -16,10 +16,10 @@
 int wakeup_flag;
 //lwt_func temp_func;
 void (*temp_pfunc)();
-//int temp_argc;
-//char **temp_argv;
+int temp_argc;
+char **temp_argv;
 //char *temp_argv;
-char *temp_p;
+//char *temp_p;
 
 lwt_struct *temp_thread,*next_thread;
 sigset_t blockset;
@@ -97,19 +97,18 @@ void lwt_init() {
 
 }
 
-//lwt_struct* lwt_create(void (*pfunc)(),int argc,char *argv[]) {
-//lwt_struct* lwt_create(void (*pfunc)(),int argc,char **argv) {
+lwt_struct* lwt_create(void (*pfunc)(),int argc,char **argv) {
 //lwt_struct* lwt_create(void (*pfunc)(),int argc,char *argv) {
-lwt_struct* lwt_create(void (*pfunc)(),char *p) {
+//lwt_struct* lwt_create(void (*pfunc)(),char *p) {
 	void* addr;
 	lwt_struct* new_thread;
 
 	sigprocmask(SIG_BLOCK, &blockset, NULL);
 
 	temp_pfunc = pfunc;
-	//temp_argc = argc;
-	//temp_argv = argv;
-	temp_p = p;
+	temp_argc = argc;
+	temp_argv = argv;
+	//temp_p = p;
 
 
 	GetFront(ready_queue,&temp_thread);
@@ -138,12 +137,12 @@ if(new_thread==NULL)
 		lwt_load(new_thread);	
 		sigprocmask(SIG_UNBLOCK, &blockset, NULL);
 		//temp_func();	
-		//if(argc==0)
-		if(temp_p==NULL)
+		if(temp_argc==0)
+		//if(temp_p==NULL)
 			(*temp_pfunc)();
 		else
-			//(*temp_pfunc)(temp_argc,temp_argv);
-			(*temp_pfunc)(temp_p);	
+			(*temp_pfunc)(temp_argc,temp_argv);
+			//(*temp_pfunc)(temp_p);	
 	}	
 }
 void lwt_wait(lwt_struct* wait_thread) {

@@ -38,10 +38,8 @@ void lwt_scheduler (int dummy);
 
 void lwt_init();
 
-lwt_struct* lwt_create(void (*pfunc)(),char *p);
-//lwt_struct* lwt_create(void (*pfunc)(),int argc,char *argv);
-//lwt_struct* lwt_create(void (*pfunc)(),int argc,char *argv[]);
-//lwt_struct* lwt_create(void (*pfunc)(),int argc,char **argv);
+//lwt_struct* lwt_create(void (*pfunc)(),char *p);
+lwt_struct* lwt_create(void (*pfunc)(),int argc,char **argv);
 //lwt_struct* lwt_create(lwt_func pfunc);
 
 void lwt_wait(lwt_struct* wait_thread);
