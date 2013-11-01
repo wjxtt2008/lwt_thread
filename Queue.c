@@ -4,7 +4,7 @@
 #include<malloc.h>
 #include<stdio.h>
 
-/*构造一个空队列*/
+/*Initialize a empty Queue*/
 Queue *InitQueue()
 {
 	Queue *pqueue = (Queue *)malloc(sizeof(Queue));
@@ -17,7 +17,7 @@ Queue *InitQueue()
 	return pqueue;
 }
 
-/*销毁一个队列*/
+/*Destroy a Queue*/
 void DestroyQueue(Queue *pqueue)
 {
 	if(IsEmpty(pqueue)!=1)
@@ -25,7 +25,7 @@ void DestroyQueue(Queue *pqueue)
 	free(pqueue);
 }
 
-/*清空一个队列*/
+/*Clear a Queue*/
 void ClearQueue(Queue *pqueue)
 {
 	while(IsEmpty(pqueue)!=1)
@@ -35,7 +35,7 @@ void ClearQueue(Queue *pqueue)
 
 }
 
-/*判断队列是否为空*/
+/*Judge is Queue empty or not*/
 int IsEmpty(Queue *pqueue)
 {
 	if(pqueue->front==NULL&&pqueue->rear==NULL&&pqueue->size==0)
@@ -44,13 +44,13 @@ int IsEmpty(Queue *pqueue)
 		return 0;
 }
 
-/*返回队列大小*/
+/*Get size of Queue*/
 int GetSize(Queue *pqueue)
 {
 	return pqueue->size;
 }
 
-/*返回队头元素*/
+/*Check the head node*/
 PNode GetFront(Queue *pqueue,Item *pitem)
 {
 	if(IsEmpty(pqueue)!=1&&pitem!=NULL)
@@ -60,7 +60,7 @@ PNode GetFront(Queue *pqueue,Item *pitem)
 	return pqueue->front;
 }
 
-/*返回队尾元素*/
+/*Check the tail node*/
 
 PNode GetRear(Queue *pqueue,Item *pitem)
 {
@@ -71,7 +71,7 @@ PNode GetRear(Queue *pqueue,Item *pitem)
 	return pqueue->rear;
 }
 
-/*将新元素入队*/
+/*Add new item to Queue*/
 PNode EnQueue(Queue *pqueue,Item item)
 {
 	PNode pnode = (PNode)malloc(sizeof(Node));
@@ -94,7 +94,7 @@ PNode EnQueue(Queue *pqueue,Item item)
 	return pnode;
 }
 
-/*队头元素出队*/
+/*Get item out of Queue*/
 PNode DeQueue(Queue *pqueue,Item *pitem)
 {
 	PNode pnode = pqueue->front;
@@ -111,7 +111,7 @@ PNode DeQueue(Queue *pqueue,Item *pitem)
 	return pqueue->front;
 }
 
-/*遍历队列并对各数据项调用visit函数*/
+/*traverse Queue and execute visit*/
 void QueueTraverse(Queue *pqueue,void (*visit)())
 {
 	PNode pnode = pqueue->front;
@@ -126,31 +126,6 @@ void QueueTraverse(Queue *pqueue,void (*visit)())
 
 /******************Circle Queue********************/
 
-/*add new item to CicleQueue*/
-/*
-PNode EnCircleQueue(Queue *pqueue,Item item)
-{
-	PNode pnode = (PNode)malloc(sizeof(Node));
-	if(pnode != NULL)
-	{
-		pnode->data = item;
-		
-		if(IsEmpty(pqueue))
-		{
-			pqueue->front = pnode;
-		}
-		else
-		{
-			pqueue->rear->next = pnode;
-		}
-
-		pnode->next = pqueue->front;
-		pqueue->rear = pnode;
-		pqueue->size++;
-	}
-	return pnode;
-}
-*/
 /*Get item out of CircleQueue*/
 
 PNode DeCircleQueue(Queue *pqueue,Item *pitem)
@@ -190,7 +165,7 @@ PNode MoveCircleQueue(Queue *pqueue,Item *pitem)
 	}
 	return pqueue->front;
 }
-
+/*Add item to Circle Queue*/
 PNode EnCircleQueue(Queue *pqueue,Item item)
 {
 	PNode pnode = (PNode)malloc(sizeof(Node));

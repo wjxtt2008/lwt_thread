@@ -67,7 +67,7 @@ int main(){
 	thread3=lwt_create(Thread3);
 	printf("Thread3 ready_queue size: %d\n",size());
 
-	sleep(5);
+	lwt_sleep(5);
 	Thread_main();
 
 	printf("complete\n");

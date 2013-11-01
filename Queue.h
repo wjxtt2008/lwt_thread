@@ -26,7 +26,7 @@ void DestroyQueue(Queue *pqueue);
 /*Clear a Queue*/
 void ClearQueue(Queue *pqueue);
 
-/*Jude is Queue empty or not*/
+/*Judge is Queue empty or not*/
 int IsEmpty(Queue *pqueue);
 
 /*Get size of Queue*/

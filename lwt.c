@@ -20,7 +20,10 @@ sigset_t blockset;
 Queue* ready_queue,*sleep_queue; // ready_queue is a CircleQueue
 
 //lwt_struct thread_list[17];
-
+/* 
+* load store macro is used for load&store sp(stack pointor) and bp(base pointor)
+*
+*/
 #ifdef __x86_64__
 
 	#define lwt_store(pthread) \
@@ -63,16 +66,17 @@ Queue* ready_queue,*sleep_queue; // ready_queue is a CircleQueue
 
 #endif
 
+/*for debug reason,expose the get size of Queue function*/
 int size() {
 	return ready_queue->size;
 }
-
+/* ticking the sleep time*/
 void ticktock(lwt_struct* pthread){
 	pthread->t_slpc--;
 	if(pthread->t_slpc<=0)
 		wakeup_flag=true;
 }
-
+/* initailize lwt_thread environment*/
 void lwt_init() {
 	
 	ready_queue = InitQueue();
@@ -90,7 +94,7 @@ void lwt_init() {
 	sigaddset(&blockset, SIGALRM);
 
 }
-
+/* create a new lwt_thread */
 lwt_struct* lwt_create(lwt_func pfunc) {
 	void* addr;
 	lwt_struct* new_thread;
@@ -127,6 +131,7 @@ if(new_thread==NULL)
 		temp_func();		
 	}	
 }
+/* wait for a child thread */
 void lwt_wait(lwt_struct* wait_thread) {
 	printf("lwt_wait\n");
 	sigprocmask(SIG_BLOCK, &blockset, NULL);
@@ -160,6 +165,7 @@ void lwt_wait(lwt_struct* wait_thread) {
 		}
 	}
 }
+/* thread exit */
 void lwt_exit(){
 	sigprocmask(SIG_BLOCK, &blockset, NULL);
 	DeCircleQueue(ready_queue,&temp_thread);
@@ -176,13 +182,14 @@ void lwt_exit(){
 	longjmp(temp_thread->t_env,1);		
 	
 }
+/* thread sleep sec seconds*/
 void lwt_sleep(int sec) {
 	GetFront(ready_queue,&temp_thread);
 	temp_thread->t_state=lwt_SLEEP;
 	temp_thread->t_slpc=sec*lwt_factor;
 	pause();
 }
-
+/* implementd lwt_schelduer as signal handler*/
 void lwt_scheduler (int dummy) {
 #ifdef _DEBUG_	
 printf("scheduler \n");
