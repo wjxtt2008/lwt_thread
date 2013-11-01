@@ -11,7 +11,7 @@ typedef enum lwt_state{
 
 } lwt_state;
 
-typedef void (*lwt_func)();
+//typedef void (*lwt_func)(int i);
 
 typedef struct lwt_struct {
 	int t_id;
@@ -22,7 +22,7 @@ typedef struct lwt_struct {
 	struct lwt_struct* t_father;
 	struct lwt_struct* t_wthread;
 	jmp_buf t_env;
-	lwt_func t_func;
+	//lwt_func t_func;
 	lwt_state t_state;
 }lwt_struct;
 
@@ -38,7 +38,11 @@ void lwt_scheduler (int dummy);
 
 void lwt_init();
 
-lwt_struct* lwt_create(lwt_func pfunc);
+lwt_struct* lwt_create(void (*pfunc)(),char *p);
+//lwt_struct* lwt_create(void (*pfunc)(),int argc,char *argv);
+//lwt_struct* lwt_create(void (*pfunc)(),int argc,char *argv[]);
+//lwt_struct* lwt_create(void (*pfunc)(),int argc,char **argv);
+//lwt_struct* lwt_create(lwt_func pfunc);
 
 void lwt_wait(lwt_struct* wait_thread);
 
