@@ -291,9 +291,13 @@ void lwt_semP(lwt_semaphore* sem){
 			return;
 		}
 		else{
+			printf("break1\n");
 			EnQueue(sem->sem_queue,temp_thread);
+			printf("break2\n");
 			GetFront(ready_queue,&temp_thread);
+			printf("break3\n");
 			lwt_load(temp_thread);
+			printf("break4\n");
 			longjmp(temp_thread->t_env,1);
 		}
 	}

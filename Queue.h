@@ -1,6 +1,6 @@
 #ifndef Queue_H
 #define Queue_H
-
+/*
 typedef lwt_struct* Item;
 //typedef int Item;
 typedef struct node * PNode;
@@ -16,6 +16,7 @@ typedef struct
 	PNode rear;
 	int size;
 }Queue;
+*/
 /***************regular Queue*******************/
 /*Initialize a empty Queue*/
 Queue *InitQueue();
